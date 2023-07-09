@@ -15,9 +15,6 @@ def convert_file():
     if not os.path.isfile(filepath):
         print(COLOR_RED + "Input is not a file! Please input trips.txt." + COLOR_RESET)
         exit()
-    if not "trips" in os.path.basename(filepath):
-        print(COLOR_RED + "Incorrect file input! Please input trips.txt." + COLOR_RESET)
-        exit()
     make_new_file(filepath)        
     
 def make_new_file(filepath):
@@ -25,14 +22,16 @@ def make_new_file(filepath):
         trips_txt = io.TextIOWrapper(file_raw)
         csv_file = csv.DictReader(trips_txt)
         csv_list = list(csv_file)
+        if "wheelchair_accessible" not in csv_file.fieldnames:
+            print(COLOR_RED + "No wheelchair_accessible column detected. The operation cannot be performed." + COLOR_RESET)
+            return
+        if all(row["wheelchair_accessible"] == "1" for row in csv_list): 
+            print(COLOR_RED + "Values for wheelchair_accessible are already set to 1. Exiting operation." + COLOR_RESET)
+            return
         file_name = "trips_wheelchair_accessible.txt"
         if os.path.exists(file_name):
             print(COLOR_RED + "File with name " + file_name + " already exists in directory; cannot create a new one. Move this file and try again." + COLOR_RESET)
             return
-        for row in csv_list:
-            if row["wheelchair_accessible"] == "1": 
-                print(COLOR_RED + "Values for wheelchair_accessible are already set to 1. Exiting operation." + COLOR_RESET)
-                return
         new_file = open(file_name, "w")
         new_csv_writer = csv.DictWriter(new_file, fieldnames=csv_file.fieldnames)
         new_csv_writer.writeheader()
